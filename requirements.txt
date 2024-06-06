@@ -1,5 +1,5 @@
 streamlit
-plotly
-requests
-forex-python
 streamlit-authenticator
+plotly
+streamlit-option-menu
+sqlite3
