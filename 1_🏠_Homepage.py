@@ -15,6 +15,7 @@ import database as db  # local import
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Settings 
 incomes = ["Salary", "Business", "Other Income"]
@@ -30,25 +31,34 @@ names = ["Aaron Redada", "Bruce Banner"]
 usernames = ["ajredada", "bbanner"]
 
 file_path = Path(__file__).parent / "hashed_pw.pkl"
-logging.info(f"Looking for hashed passwords file at: {file_path}")
+logger.info(f"Looking for hashed passwords file at: {file_path}")
 
 try:
     with file_path.open("rb") as file:
         hashed_passwords = pickle.load(file)
+    logger.info("Hashed passwords loaded successfully.")
 except FileNotFoundError as e:
     st.error("Hashed passwords file not found. Please ensure the file exists.")
-    logging.error(f"Hashed passwords file not found: {e}")
+    logger.error(f"Hashed passwords file not found: {e}")
     st.stop()
 except Exception as e:
     st.error("An error occurred while loading the hashed passwords.")
-    logging.error(f"Error loading hashed passwords: {e}")
+    logger.error(f"Error loading hashed passwords: {e}")
     st.stop()
 
 try:
-    authenticator = stauth.Authenticate(names, usernames, hashed_passwords, "manager_dashboard", "abcdef", cookie_expiry_days=30)
+    authenticator = stauth.Authenticate(
+        names=names,
+        usernames=usernames,
+        passwords=hashed_passwords,
+        cookie_name="manager_dashboard",
+        key="abcdef",
+        cookie_expiry_days=30
+    )
+    logger.info("Authenticator setup successfully.")
 except Exception as e:
     st.error("An error occurred during the authentication setup.")
-    logging.error(f"Authentication setup error: {e}")
+    logger.error(f"Authentication setup error: {e}")
     st.stop()
 
 name, authentication_status, username = authenticator.login("Login", "main")
