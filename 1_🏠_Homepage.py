@@ -48,11 +48,11 @@ except Exception as e:
 
 try:
     authenticator = stauth.Authenticate(
-        names=names,
-        usernames=usernames,
-        passwords=hashed_passwords,
-        cookie_name="manager_dashboard",
-        key="abcdef",
+        names,
+        usernames,
+        hashed_passwords,
+        "manager_dashboard",
+        "abcdef",
         cookie_expiry_days=30
     )
     logger.info("Authenticator setup successfully.")
