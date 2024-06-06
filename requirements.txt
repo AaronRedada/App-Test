@@ -2,4 +2,3 @@ streamlit
 streamlit-authenticator
 plotly
 streamlit-option-menu
-sqlite3
