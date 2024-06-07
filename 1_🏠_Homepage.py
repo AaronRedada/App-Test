@@ -1,6 +1,5 @@
 import calendar
 from datetime import datetime
-import logging
 
 import streamlit as st
 import plotly.graph_objects as go
@@ -12,10 +11,6 @@ from pathlib import Path
 import streamlit_authenticator as stauth
 
 import database as db  # local import
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 # Settings 
 incomes = ["Salary", "Business", "Other Income"]
@@ -31,35 +26,10 @@ names = ["Aaron Redada", "Bruce Banner"]
 usernames = ["ajredada", "bbanner"]
 
 file_path = Path(__file__).parent / "hashed_pw.pkl"
-logger.info(f"Looking for hashed passwords file at: {file_path}")
+with file_path.open("rb") as file:
+    hashed_passwords = pickle.load(file)
 
-try:
-    with file_path.open("rb") as file:
-        hashed_passwords = pickle.load(file)
-    logger.info("Hashed passwords loaded successfully.")
-except FileNotFoundError as e:
-    st.error("Hashed passwords file not found. Please ensure the file exists.")
-    logger.error(f"Hashed passwords file not found: {e}")
-    st.stop()
-except Exception as e:
-    st.error("An error occurred while loading the hashed passwords.")
-    logger.error(f"Error loading hashed passwords: {e}")
-    st.stop()
-
-try:
-    authenticator = stauth.Authenticate(
-        names,
-        usernames,
-        hashed_passwords,
-        "manager_dashboard",
-        "abcdef",
-        cookie_expiry_days=30
-    )
-    logger.info("Authenticator setup successfully.")
-except Exception as e:
-    st.error("An error occurred during the authentication setup.")
-    logger.error(f"Authentication setup error: {e}")
-    st.stop()
+authenticator = stauth.Authenticate(names, usernames, hashed_passwords, "manager_dashboard", "abcdef", cookie_expiry_days=30)
 
 name, authentication_status, username = authenticator.login("Login", "main")
 
@@ -161,3 +131,7 @@ if authentication_status:
                 fig = go.Figure(data)
                 fig.update_layout(margin=dict(l=0, r=0, t=5, b=5))
                 st.plotly_chart(fig, use_container_width=True)
+
+
+
+
