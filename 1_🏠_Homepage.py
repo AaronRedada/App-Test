@@ -8,7 +8,7 @@ import sqlite3
 
 import pickle
 from pathlib import Path
-import streamlit_authenticator as stauth
+import hashlib
 
 import database as db  # local import
 
@@ -29,14 +29,33 @@ file_path = Path(__file__).parent / "hashed_pw.pkl"
 with file_path.open("rb") as file:
     hashed_passwords = pickle.load(file)
 
-authenticator = stauth.Authenticate(names, usernames, hashed_passwords)
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
 
-name, authentication_status, username = authenticator.login("Login")
+def verify_password(stored_password, provided_password):
+    return stored_password == hash_password(provided_password)
 
-if authentication_status == False:
-    st.error("Username or Password is Incorrect")
+# Login form
+st.sidebar.title("Login")
+username = st.sidebar.text_input("Username")
+password = st.sidebar.text_input("Password", type="password")
+login_button = st.sidebar.button("Login")
 
-if authentication_status == None:
+authentication_status = False
+name = None
+
+if login_button:
+    if username in usernames:
+        user_index = usernames.index(username)
+        if verify_password(hashed_passwords[user_index], password):
+            authentication_status = True
+            name = names[user_index]
+        else:
+            st.sidebar.error("Username or Password is Incorrect")
+    else:
+        st.sidebar.error("Username or Password is Incorrect")
+
+if not authentication_status:
     st.warning("Please enter your username and password")
 
 if authentication_status:
@@ -44,7 +63,8 @@ if authentication_status:
     st.title(page_title + " " + page_icon)
     st.sidebar.success("Select a page above.")
     st.sidebar.title(f"Welcome, {name}")
-    authenticator.logout("Logout", "sidebar")
+    if st.sidebar.button("Logout"):
+        st.experimental_rerun()
 
     # Period Selection
     years = [datetime.today().year, datetime.today().year + 1]
@@ -131,7 +151,3 @@ if authentication_status:
                 fig = go.Figure(data)
                 fig.update_layout(margin=dict(l=0, r=0, t=5, b=5))
                 st.plotly_chart(fig, use_container_width=True)
-
-
-
-
